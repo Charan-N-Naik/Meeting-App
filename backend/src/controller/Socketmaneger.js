@@ -24,25 +24,58 @@ export const connectToSocket = (server) => {
 
     // when any connection come do the call back it like doccumet.addEventListner
     io.on("connection", (socket) => {
+        console.log("something connected");
         //listing to client heare have same accept-call towords client side also
+        // socket.on("join-call", (path) => {
+        //     if (connections[path] === undefined) {
+        //         connections[path] = []//connections[path] = [socketId1, socketId2, socketId3]
+        //         //❌ One room (path)does NOT have one socket ID
+        //         // ✅ One room has multiple socket IDs
+        //         // ✅ Each socket ID belongs to exactly one user connection
+        //     }
+        //     // where have many user have same path but they have different id all are conneceted to same socket
+        //     connections[path].push(socket.id)
+
+        //     timeOnline[socket.id] = new Date();
+        //     for (let a = 0; a < connections[path].length; a++) {//connections["/room1"] = ["id1", "id2", "id3"]
+        //         io.to(connections[path][a]).emit("chat-message", messages[path][a]['data'], messages[path][a]['sender'], messages[path][a]['socket-id-sender']);
+        //     }
+        //     if (messages[path] !== undefined) {
+        //         for (let a = 0; a < messages[path].length; ++a) {
+        //             io.to(socket.id).emit("chat-message", messages[path][a]['data'],
+        //                 messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
+        //         }
+        //     }
+        // })
+        
         socket.on("join-call", (path) => {
+
             if (connections[path] === undefined) {
-                connections[path] = []//connections[path] = [socketId1, socketId2, socketId3]
-                //❌ One room (path)does NOT have one socket ID
-                // ✅ One room has multiple socket IDs
-                // ✅ Each socket ID belongs to exactly one user connection
+                connections[path] = []
             }
-            // where have many user have same path but they have different id all are conneceted to same socket
             connections[path].push(socket.id)
 
             timeOnline[socket.id] = new Date();
-            for (let a = 0; a < connections[path].length; a++) {//connections["/room1"] = ["id1", "id2", "id3"]
-                io.to(connections[path][a]).emit("chat-message", messages[path][a]['data'], messages[path][a]['sender'], messages[path][a]['socket-id-sender']);
+
+            // connections[path].forEach(elem => {
+            //     io.to(elem)
+            // })
+
+            for (let a = 0; a < connections[path].length; a++) {
+                io.to(connections[path][a]).emit("user-joined", socket.id, connections[path])
             }
+
+            if (messages[path] !== undefined) {
+                for (let a = 0; a < messages[path].length; ++a) {
+                    io.to(socket.id).emit("chat-message", messages[path][a]['data'],
+                        messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
+                }
+            }
+
         })
 
 
-        socket.io("signal", (toId, messages) => {
+        socket.on("signal", (toId, messages) => {
             io.to(toId).emit("signal", socket.id, messages);// send to specific room 
         })
 
@@ -98,7 +131,7 @@ export const connectToSocket = (server) => {
                         for(let a=0;a<connections[key].length;++a){
                             io.to(connections[key][a]).emit('user-left',socket.id)
                         }
-                        var index=connections[key].indexOd(socket.id)
+                        var index=connections[key].indexOf(socket.id)
                         connections[key].splice(index,1);
                         if(connections[key].length===0){
                             delete connections[key]
