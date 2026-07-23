@@ -20,8 +20,9 @@ import ChatIcon from '@mui/icons-material/Chat';
 import Input from '@mui/material/Input';
 import { useNavigate } from "react-router-dom";
 import Home from "./Home";
+import server from "../environment";
 
-const server_url = "http://localhost:5000"; // put after into the env
+const server_url = server;
 
 // legacy code
 // creating connection and the Stun server establishment

@@ -1,6 +1,7 @@
 import React, { createContext, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import server from "../environment";
 
 
 
@@ -10,7 +11,7 @@ export const AuthContext = createContext(null);
 
 // 2. Axios instance
 const client = axios.create({
-  baseURL: "http://localhost:5000/api/v1/users",
+  baseURL: `${server}/api/v1/users`,
 });
 
 // 3. Provider Component
