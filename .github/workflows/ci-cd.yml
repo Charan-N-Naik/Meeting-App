@@ -1,0 +1,71 @@
+name: MeetingApp CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # -----------------------------------------------------------------
+  # Job 1: Backend Testing & Linting
+  # -----------------------------------------------------------------
+  backend-test:
+    name: Backend CI (Node.js)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Run Backend Tests
+        env:
+          PORT: 5000
+          DB_URL: ${{ secrets.MONGO_URL_TEST || 'mongodb://127.0.0.1:27017/test_db' }}
+        run: |
+          cd backend
+          npm test --if-present
+
+  # -----------------------------------------------------------------
+  # Job 2: Frontend Build & Verification
+  # -----------------------------------------------------------------
+  frontend-build:
+    name: Frontend CI (Build & Verification)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build Frontend React App
+        run: |
+          cd frontend
+          CI=false npm run build
