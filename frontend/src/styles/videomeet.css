@@ -79,6 +79,12 @@
     
 
 }
+.messagesArea{
+    height: 75%;
+    overflow-y: auto;
+    padding: 10px;
+    color: white;
+}
 .chattingArea{
     position: absolute;
     bottom: 0;
@@ -96,4 +102,12 @@
     margin: 10px;
     height: 2rem;
     width: 2rem;
+}
+
+.chatingDisplay{
+
+}
+
+.meetContainer{
+    
 }

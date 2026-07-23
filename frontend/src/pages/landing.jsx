@@ -1,7 +1,10 @@
 import React from "react";
 import "../App.css"
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+
+import { Navigate } from "react-router";
 function LandingPage() {
+    const Router=useNavigate();
     return (
         <div className="LandingPageContainer">
             <nav>
@@ -9,12 +12,13 @@ function LandingPage() {
                     <h2>Video Call</h2>
                 </div>
                 <div className="navlist">
-                    <p>Join as Guest</p>
-                    <p>Register</p>
-                    <div role="button">
+                    <p onClick={()=>{
+                        Router(`/${Math.floor(Math.random() * 9000) + 1000}`)
+                    }}>Join as Guest</p>
+                    <p onClick={()=>Router("/auth")}>Register</p>
+                    <div role="button" onClick={()=>Router("/auth")}>
                         Login
                     </div>
-
                 </div>
             </nav>
             <main>

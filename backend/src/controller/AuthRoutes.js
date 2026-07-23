@@ -2,6 +2,9 @@ import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { User } from "../moduls/user.model.js";
+import mongoose from "mongoose";
+import { meeting } from "../moduls/meeting.model.js";
+
 
 /* LOGIN */
 const login = async (req, res) => {
@@ -84,5 +87,46 @@ const register = async (req, res) => {
   }
 };
 
-export { login, register };
+
+const addToHistory=async (req,res)=>{
+  const {token,meeting_code}=req.body;
+  try{
+    const user =await User.findOne({token:token});
+    const newMeeting=new meeting({
+      user_id:user.username,
+      meetingCode:meeting_code
+    })
+    await newMeeting.save();
+    res.status(StatusCodes.CREATED).json({ message: "added code to History" });
+  }catch(e){
+    res.json({message:`something went wrong ${e}`})
+  }
+}
+const getUserHistroy = async (req, res) => {
+    const { token } = req.query;
+
+    try {
+        const user = await User.findOne({ token });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const meetings = await meeting.find({
+            user_id: user.username
+        });
+        console.log(`${meetings}`);
+
+        return res.status(200).json(meetings);
+
+    } catch (e) {
+        return res.status(500).json({
+            message: e.message
+        });
+    }
+};
+
+export { login, register,addToHistory, getUserHistroy};
 
