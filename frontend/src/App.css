@@ -1,83 +1,251 @@
-.App {
-  text-align: center;
-}
-.LandingPageContainer {
-  width: 100vw;
-  min-height: 100vh;
+/* ==========================================================================
+   MeetFlow AI - Premium Gen-Z Dark Mode Aesthetic Design System
+   ========================================================================== */
 
-  background-image: url('../public/background.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  color: white;
- 
-}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
 
-.LandingPageContainer nav{
-  padding-inline: 1.2rem;
-  padding-block: 1.6rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navHeader h2{
-  font-size: 1.7rem ;
+:root {
+  --bg-dark: #09090B;
+  --bg-card: rgba(18, 18, 26, 0.65);
+  --bg-card-hover: rgba(26, 26, 38, 0.85);
+  --accent-purple: #8B5CF6;
+  --accent-cyan: #06B6D4;
+  --accent-pink: #EC4899;
+  --accent-blue: #3B82F6;
+  --text-main: #F4F4F5;
+  --text-muted: #A1A1AA;
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-bright: rgba(255, 255, 255, 0.18);
+  --glow-purple: rgba(139, 92, 246, 0.35);
+  --glow-blue: rgba(59, 130, 246, 0.35);
+  --glow-pink: rgba(236, 72, 153, 0.35);
 }
 
-.navlist{
-  display: flex;
-  gap: 2rem;
-  cursor: pointer;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-
-
-/* main */
-
-.lendingMaincontainer {
-  display: flex;
-  justify-content: space-between;
-  padding-inline: 3rem;
-  height: 80vh;
-  align-items: center;
-
-}
-.lendingMaincontainer > div:nth-child(1){
-  font-size: 2rem;
-  margin-top: 2rem;
-}
-.lendingMaincontainer > div:nth-child(1) div[role="button"]{
-    background-color: #FF9839;
-    width: fit-content;
-    padding: 1rem;
-    border-radius: 20px;
-    margin-top: 2rem;
-
-    
-}
-.lendingMaincontainer > div:nth-child(1) div[role="button"] a{
-  color:aliceblue;
-  font-size: 1.2rem;
-  text-align: center;
-
-}
-
-
-.lendingMaincontainer > div:nth-child(2) img{
-  height: 70vh;
-  width: auto;
-}  
 
 body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  overflow-x: hidden;
   user-select: none;
 }
 
-a{
-  text-decoration: none;
+/* --------------------------------------------------------------------------
+   Glassmorphism & Utilities
+   -------------------------------------------------------------------------- */
+.glass-nav {
+  background: rgba(9, 9, 11, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glass);
 }
 
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
+.glass-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glass-bright);
+  box-shadow: 0 20px 40px -15px rgba(139, 92, 246, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-4px);
+}
 
+.glass-pill {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
 
+.glass-modal {
+  background: rgba(15, 15, 23, 0.92);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+              0 0 60px rgba(139, 92, 246, 0.2);
+}
 
+/* --------------------------------------------------------------------------
+   Gradients & Glowing Typography
+   -------------------------------------------------------------------------- */
+.animated-gradient-text {
+  background: linear-gradient(135deg, #FFF 0%, #A78BFA 30%, #38BDF8 70%, #F472B6 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 6s ease infinite;
+}
 
+.heading-font {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.glow-btn-primary {
+  background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-btn-primary:hover {
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.7);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.glow-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  font-weight: 600;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.glow-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   Keyframe Animations
+   -------------------------------------------------------------------------- */
+
+/* Continuous Heartbeat */
+@keyframes heartbeat {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(236,72,153,0.5)); }
+  15% { transform: scale(1.22); filter: drop-shadow(0 0 18px rgba(236,72,153,0.9)); }
+  30% { transform: scale(1.05); filter: drop-shadow(0 0 10px rgba(236,72,153,0.7)); }
+  45% { transform: scale(1.18); filter: drop-shadow(0 0 15px rgba(236,72,153,0.85)); }
+  60% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(236,72,153,0.5)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(236,72,153,0.5)); }
+}
+
+.heart-pulse {
+  animation: heartbeat 2.2s infinite ease-in-out;
+}
+
+/* Floating Elements */
+@keyframes floatSlow {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes floatReverse {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(12px) rotate(-1.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 6s ease-in-out infinite;
+}
+
+/* Floating Contact Button Bounce */
+@keyframes periodicBounce {
+  0%, 80%, 100% { transform: translateY(0) scale(1); }
+  88% { transform: translateY(-12px) scale(1.08); }
+  94% { transform: translateY(-4px) scale(1.02); }
+}
+
+.contact-bounce {
+  animation: periodicBounce 4s ease-in-out infinite;
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.contact-bounce:hover {
+  transform: scale(1.12) rotate(5deg) !important;
+  box-shadow: 0 15px 40px rgba(139, 92, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6) !important;
+}
+
+/* Ambient Background Blobs */
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.aurora-purple {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, #8B5CF6 0%, rgba(139,92,246,0) 70%);
+}
+
+.aurora-blue {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #3B82F6 0%, rgba(59,130,246,0) 70%);
+}
+
+.aurora-pink {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, #EC4899 0%, rgba(236,72,153,0) 70%);
+}
+
+/* Sub-grid Background Pattern */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Hand-drawn style text font alternative */
+.font-handwriting {
+  font-family: 'Outfit', sans-serif;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #09090B;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272A;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3F3F46;
+}
