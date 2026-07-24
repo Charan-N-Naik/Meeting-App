@@ -95,10 +95,6 @@ export default function Video() {
     }, []);
 
     let getUserMediaSuccess = (stream) => {
-        try {
-            window.localStream?.getTracks().forEach(track => track.stop());
-        } catch (e) {}
-
         window.localStream = stream;
         if (localVideoref.current) {
             localVideoref.current.srcObject = stream;
@@ -107,10 +103,16 @@ export default function Video() {
         for (let id in connections) {
             if (id === socketId.current) continue;
 
+            const senders = connections[id].getSenders ? connections[id].getSenders() : [];
             stream.getTracks().forEach(track => {
-                try {
-                    connections[id].addTrack(track, stream);
-                } catch (e) { console.log(e); }
+                const existingSender = senders.find(s => s.track && s.track.kind === track.kind);
+                if (existingSender) {
+                    existingSender.replaceTrack(track).catch(e => console.log(e));
+                } else {
+                    try {
+                        connections[id].addTrack(track, stream);
+                    } catch (e) { console.log(e); }
+                }
             });
 
             connections[id].createOffer().then(description => {
@@ -152,12 +154,6 @@ export default function Video() {
     }, [audio, video]);
 
     let getDisplayMediaSuccess = (stream) => {
-        try {
-            window.localStream?.getTracks().forEach(track => track.stop());
-        } catch (e) {
-            console.log(e);
-        }
-
         window.localStream = stream;
         if (localVideoref.current) {
             localVideoref.current.srcObject = stream;
@@ -166,10 +162,16 @@ export default function Video() {
         for (let id in connections) {
             if (id === socketId.current) continue;
 
+            const senders = connections[id].getSenders ? connections[id].getSenders() : [];
             stream.getTracks().forEach(track => {
-                try {
-                    connections[id].addTrack(track, stream);
-                } catch (e) { console.log(e); }
+                const existingSender = senders.find(s => s.track && s.track.kind === track.kind);
+                if (existingSender) {
+                    existingSender.replaceTrack(track).catch(e => console.log(e));
+                } else {
+                    try {
+                        connections[id].addTrack(track, stream);
+                    } catch (e) { console.log(e); }
+                }
             });
 
             connections[id].createOffer().then(description => {
@@ -259,6 +261,19 @@ export default function Video() {
             }
 
             if (signal.sdp) {
+                // Ensure local tracks are attached before generating SDP answer
+                if (signal.sdp.type === "offer" && window.localStream) {
+                    const senders = connections[fromId].getSenders ? connections[fromId].getSenders() : [];
+                    window.localStream.getTracks().forEach(track => {
+                        const hasTrack = senders.some(s => s.track && s.track.kind === track.kind);
+                        if (!hasTrack) {
+                            try {
+                                connections[fromId].addTrack(track, window.localStream);
+                            } catch (e) { console.log(e); }
+                        }
+                    });
+                }
+
                 connections[fromId]
                     .setRemoteDescription(new RTCSessionDescription(signal.sdp))
                     .then(() => {
@@ -426,6 +441,9 @@ export default function Video() {
         return () => {
             socketRef.current?.disconnect();
             window.localStream?.getTracks().forEach(t => t.stop());
+            for (let key in connections) {
+                delete connections[key];
+            }
         };
     }, []);
 
