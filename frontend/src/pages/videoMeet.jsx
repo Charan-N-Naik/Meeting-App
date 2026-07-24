@@ -183,6 +183,47 @@ export default function Video() {
         let signal = JSON.parse(message);
 
         if (fromId !== socketId.current) {
+            if (!connections[fromId]) {
+                connections[fromId] = new RTCPeerConnection(peerConfigConnections);
+
+                connections[fromId].onicecandidate = event => {
+                    if (event.candidate) {
+                        socketRef.current.emit(
+                            "signal",
+                            fromId,
+                            JSON.stringify({ ice: event.candidate })
+                        );
+                    }
+                };
+
+                connections[fromId].ontrack = event => {
+                    const stream = event.streams[0];
+                    setVideos(prev => {
+                        const exists = prev.find(v => v.socketId === fromId);
+                        if (exists) {
+                            return prev.map(v => v.socketId === fromId ? { socketId: fromId, stream } : v);
+                        }
+                        return [...prev, { socketId: fromId, stream }];
+                    });
+                };
+
+                connections[fromId].onaddstream = event => {
+                    setVideos(prev => {
+                        if (prev.find(v => v.socketId === fromId)) return prev;
+                        return [...prev, { socketId: fromId, stream: event.stream }];
+                    });
+                };
+
+                if (window.localStream) {
+                    window.localStream.getTracks().forEach(track => {
+                        try {
+                            connections[fromId].addTrack(track, window.localStream);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    });
+                }
+            }
 
             if (signal.sdp) {
                 connections[fromId]
@@ -199,7 +240,8 @@ export default function Video() {
                                 });
                             });
                         }
-                    });
+                    })
+                    .catch(e => console.log(e));
             }
 
             if (signal.ice) {
@@ -258,6 +300,7 @@ export default function Video() {
 
                 clients.forEach(socketListId => {
 
+                    if (socketListId === socketId.current) return;
                     if (connections[socketListId]) return;
 
                     connections[socketListId] = new RTCPeerConnection(peerConfigConnections);
@@ -272,6 +315,17 @@ export default function Video() {
                         }
                     };
 
+                    connections[socketListId].ontrack = event => {
+                        const stream = event.streams[0];
+                        setVideos(prev => {
+                            const exists = prev.find(v => v.socketId === socketListId);
+                            if (exists) {
+                                return prev.map(v => v.socketId === socketListId ? { socketId: socketListId, stream } : v);
+                            }
+                            return [...prev, { socketId: socketListId, stream }];
+                        });
+                    };
+
                     connections[socketListId].onaddstream = event => {
                         setVideos(prev => {
                             if (prev.find(v => v.socketId === socketListId)) return prev;
@@ -280,7 +334,26 @@ export default function Video() {
                     };
 
                     if (window.localStream) {
-                        connections[socketListId].addStream(window.localStream);
+                        window.localStream.getTracks().forEach(track => {
+                            try {
+                                connections[socketListId].addTrack(track, window.localStream);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        });
+                    }
+
+                    // Create offer to initiate WebRTC handshake
+                    if (id === socketListId) {
+                        connections[socketListId].createOffer().then(description => {
+                            connections[socketListId].setLocalDescription(description).then(() => {
+                                socketRef.current.emit(
+                                    "signal",
+                                    socketListId,
+                                    JSON.stringify({ sdp: connections[socketListId].localDescription })
+                                );
+                            });
+                        }).catch(e => console.log(e));
                     }
                 });
             });
