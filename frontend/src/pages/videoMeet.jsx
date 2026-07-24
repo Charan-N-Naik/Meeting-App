@@ -119,6 +119,66 @@ export default function Video() {
         }
     }, [audio, video]);
 
+    let getDisplayMediaSuccess = (stream) => {
+        try {
+            window.localStream?.getTracks().forEach(track => track.stop());
+        } catch (e) {
+            console.log(e);
+        }
+
+        window.localStream = stream;
+        if (localVideoref.current) {
+            localVideoref.current.srcObject = stream;
+        }
+
+        for (let id in connections) {
+            if (id === socketId.current) continue;
+
+            connections[id].addStream(stream);
+            connections[id].createOffer().then(description => {
+                connections[id].setLocalDescription(description).then(() => {
+                    socketRef.current.emit(
+                        "signal",
+                        id,
+                        JSON.stringify({ sdp: connections[id].localDescription })
+                    );
+                });
+            });
+        }
+
+        stream.getTracks().forEach(track => track.onended = () => {
+            setScreen(false);
+            try {
+                let tracks = localVideoref.current?.srcObject?.getTracks();
+                tracks?.forEach(t => t.stop());
+            } catch (e) {
+                console.log(e);
+            }
+            getUserMedia();
+        });
+    };
+
+    let getDisplayMedia = () => {
+        if (screen) {
+            if (navigator.mediaDevices.getDisplayMedia) {
+                navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+                    .then(getDisplayMediaSuccess)
+                    .catch(e => {
+                        console.log(e);
+                        setScreen(false);
+                    });
+            }
+        } else {
+            getUserMedia();
+        }
+    };
+
+    useEffect(() => {
+        if (screen !== undefined) {
+            getDisplayMedia();
+        }
+    }, [screen]);
+
     let gotMessageFromServer = (fromId, message) => {
         let signal = JSON.parse(message);
 
@@ -355,8 +415,8 @@ export default function Video() {
                             {audio ? <MicIcon /> : <MicOffIcon />}
                         </IconButton>
 
-                        <IconButton onClick={handleScreen} style={{ color: "white" }}>
-                            {screenAvailable ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+                        <IconButton onClick={handleScreen} style={{ color: screen ? "#3B82F6" : "white" }}>
+                            {screen ? <StopScreenShareIcon /> : <ScreenShareIcon />}
                         </IconButton>
 
                         <IconButton onClick={() => setModal(!showModal)} style={{ color: "white" }}>
