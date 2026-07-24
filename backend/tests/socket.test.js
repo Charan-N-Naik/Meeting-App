@@ -1,27 +1,25 @@
+import { describe, test, before, after } from "node:test";
+import assert from "node:assert";
 import { createServer } from "node:http";
-import { Server } from "socket.io";
 import { connectToSocket } from "../src/controller/Socketmaneger.js";
 
 describe("Socketmaneger WebRTC Signaling & Real-Time Chat Unit Tests", () => {
   let io;
   let server;
 
-  beforeAll((done) => {
+  before(async () => {
     server = createServer();
     io = connectToSocket(server);
-    server.listen(0, () => {
-      done();
-    });
+    await new Promise((resolve) => server.listen(0, resolve));
   });
 
-  afterAll((done) => {
-    io.close();
-    server.close();
-    done();
+  after(async () => {
+    if (io) io.close();
+    if (server) await new Promise((resolve) => server.close(resolve));
   });
 
   test("Socket server initializes correctly", () => {
-    expect(io).toBeDefined();
-    expect(typeof io.on).toBe("function");
+    assert.notStrictEqual(io, undefined);
+    assert.strictEqual(typeof io.on, "function");
   });
 });
