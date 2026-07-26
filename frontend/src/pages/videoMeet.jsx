@@ -28,6 +28,8 @@ const server_url = server;
 // creating connection and the Stun server establishment
 
 const connections = {};
+// per-peer accumulated remote MediaStreams so audio+video tracks share one stream
+const remoteStreams = {};
 const peerConfigConnections = {
     iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -236,10 +238,13 @@ export default function Video() {
                 };
 
                 connections[fromId].ontrack = event => {
-                    let stream = event.streams && event.streams[0];
-                    if (!stream) {
-                        stream = new MediaStream([event.track]);
+                    // Accumulate video + audio tracks into the SAME stream per peer
+                    // so replacing the stream object on each track doesn't drop audio/video
+                    if (!remoteStreams[fromId]) {
+                        remoteStreams[fromId] = new MediaStream();
                     }
+                    remoteStreams[fromId].addTrack(event.track);
+                    const stream = remoteStreams[fromId];
                     setVideos(prev => {
                         const exists = prev.find(v => v.socketId === fromId);
                         if (exists) {
@@ -365,10 +370,13 @@ export default function Video() {
                         };
 
                         connections[socketListId].ontrack = event => {
-                            let stream = event.streams && event.streams[0];
-                            if (!stream) {
-                                stream = new MediaStream([event.track]);
+                            // Accumulate video + audio tracks into the SAME stream per peer
+                            // so replacing the stream object on each track doesn't drop audio/video
+                            if (!remoteStreams[socketListId]) {
+                                remoteStreams[socketListId] = new MediaStream();
                             }
+                            remoteStreams[socketListId].addTrack(event.track);
+                            const stream = remoteStreams[socketListId];
                             setVideos(prev => {
                                 const exists = prev.find(v => v.socketId === socketListId);
                                 if (exists) {
@@ -442,6 +450,9 @@ export default function Video() {
             window.localStream?.getTracks().forEach(t => t.stop());
             for (let key in connections) {
                 delete connections[key];
+            }
+            for (let key in remoteStreams) {
+                delete remoteStreams[key];
             }
         };
     }, []);
