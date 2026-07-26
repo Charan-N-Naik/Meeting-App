@@ -334,8 +334,8 @@ export default function Video() {
 
         socketRef.current.on("connect", () => {
 
-            const roomPath = window.location.pathname;
-            socketRef.current.emit("join-call", roomPath);
+            // Use full URL so backend room key matches what was previously saved
+            socketRef.current.emit("join-call", window.location.href);
             socketId.current = socketRef.current.id;
 
             socketRef.current.on("chat-message", addMessage);
@@ -389,18 +389,17 @@ export default function Video() {
                         }
                     }
 
-                    // Initiate offer handshake to newly joined client
-                    if (id === socketListId) {
-                        connections[socketListId].createOffer().then(description => {
-                            connections[socketListId].setLocalDescription(description).then(() => {
-                                socketRef.current.emit(
-                                    "signal",
-                                    socketListId,
-                                    JSON.stringify({ sdp: connections[socketListId].localDescription })
-                                );
-                            });
-                        }).catch(e => console.log(e));
-                    }
+                    // Existing users send offer to the newly joined client (id = newcomer's socket)
+                    // so they can see the newcomer's stream
+                    connections[socketListId].createOffer().then(description => {
+                        connections[socketListId].setLocalDescription(description).then(() => {
+                            socketRef.current.emit(
+                                "signal",
+                                socketListId,
+                                JSON.stringify({ sdp: connections[socketListId].localDescription })
+                            );
+                        });
+                    }).catch(e => console.log(e));
                 });
             });
         });
