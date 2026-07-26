@@ -106,6 +106,8 @@ export default function Video() {
             if (id === socketId.current) continue;
 
             const senders = connections[id].getSenders ? connections[id].getSenders() : [];
+
+            // Replace active tracks with new ones
             stream.getTracks().forEach(track => {
                 const existingSender = senders.find(s => s.track && s.track.kind === track.kind);
                 if (existingSender) {
@@ -114,6 +116,17 @@ export default function Video() {
                     try {
                         connections[id].addTrack(track, stream);
                     } catch (e) { console.log(e); }
+                }
+            });
+
+            // Null-out senders for track kinds NOT in the new stream
+            // e.g. when video turns off, null the video sender so UserB sees no video
+            senders.forEach(sender => {
+                if (sender.track) {
+                    const stillExists = stream.getTracks().some(t => t.kind === sender.track.kind);
+                    if (!stillExists) {
+                        sender.replaceTrack(null).catch(e => console.log(e));
+                    }
                 }
             });
 
@@ -143,9 +156,22 @@ export default function Video() {
                 .then(getUserMediaSuccess)
                 .catch(e => console.log(e));
         } else {
+            // Both video and audio are off — stop local tracks
+            // and null out ALL senders so remote peers see/hear nothing
             try {
                 localVideoref.current.srcObject?.getTracks().forEach(track => track.stop());
+                localVideoref.current.srcObject = null;
             } catch (e) {}
+
+            for (let id in connections) {
+                if (id === socketId.current) continue;
+                const senders = connections[id].getSenders ? connections[id].getSenders() : [];
+                senders.forEach(sender => {
+                    if (sender.track) {
+                        sender.replaceTrack(null).catch(e => console.log(e));
+                    }
+                });
+            }
         }
     };
 
